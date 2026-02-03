@@ -1,4 +1,5 @@
 import logging
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.api.routes import router
@@ -42,11 +43,12 @@ async def root():
 
 def cli():
     import uvicorn
+    dev_mode = os.getenv("DEV_MODE", "false").lower() == "true"
     uvicorn.run(
         "backend.main:app",
         host=settings.server.host,
         port=settings.server.port,
-        reload=True
+        reload=dev_mode
     )
 
 if __name__ == "__main__":
