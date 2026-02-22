@@ -114,3 +114,10 @@ directory = "./prompts"
 
 # Default template for refinement
 default = "fix_grammar"
+
+# =============================================================================
+# Core Spine Mode
+# =============================================================================
+[core]
+# offline-essential: external providers are disabled by default.
+enable_refine = false

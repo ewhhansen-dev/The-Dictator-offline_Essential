@@ -105,10 +105,6 @@ function getAudioExtension(mimeType) {
 }
 
 async function appendSession() {
-    if (state.isOffline) {
-        ui.status.textContent = "Offline-only: session append disabled";
-        return;
-    }
     const text = ui.transcript.value;
     if (!text) return;
 
@@ -132,36 +128,7 @@ async function appendSession() {
 }
 
 async function refineText(templateName) {
-    if (state.isOffline) {
-        ui.status.textContent = "Offline-only: refinement disabled";
-        return;
-    }
-    const text = ui.transcript.value;
-    if (!text) return;
-
-    ui.status.textContent = `Refining (${templateName})...`;
-
-    try {
-        const res = await fetch(`${API_URL}/refine`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                text: text,
-                template: templateName
-            })
-        });
-
-        if (!res.ok) throw new Error(await res.text());
-
-        const data = await res.json();
-        ui.transcript.value = data.text;
-        ui.status.textContent = "Refined";
-        state.transcript = data.text;
-    } catch (err) {
-        console.error(err);
-        ui.status.textContent = "Refinement failed";
-        alert("Refinement failed. Check backend logs and API keys.");
-    }
+    ui.status.textContent = `Refine (${templateName}) unavailable in offline-essential mode`;
 }
 
 function copyToClipboard() {
@@ -224,13 +191,9 @@ function downloadTranscript() {
 
 function updateOfflineMode() {
     state.isOffline = ui.offlineToggle.checked;
-    ui.btnAppend.disabled = state.isOffline;
-    ui.selectTemplate.disabled = state.isOffline;
-    if (state.isOffline) {
-        ui.btnRefine.disabled = true;
-    } else if (!state.isRecording) {
-        ui.btnRefine.disabled = false;
-    }
+    ui.btnAppend.disabled = false;
+    ui.selectTemplate.disabled = true;
+    ui.btnRefine.disabled = true;
     ui.apiStatus.textContent = state.isOffline ? "API: Local-only" : ui.apiStatus.textContent;
 }
 
@@ -247,7 +210,7 @@ function updateUI() {
         ui.btnRecord.classList.remove('recording');
         ui.btnRecord.textContent = "Record (Pad 1)";
         ui.btnStop.disabled = true;
-        ui.btnRefine.disabled = state.isOffline;
+        ui.btnRefine.disabled = true;
     }
 }
 
@@ -285,14 +248,7 @@ function handleAction(action) {
     }
 
     if (action.startsWith("open_browser:")) {
-        // Just inform user, browser cannot reliably open new tabs from MIDI background event
-        // without user interaction in some contexts, but let's try
-        const target = action.split(":")[1];
-        const urls = {
-            "claude": "https://claude.ai/new",
-            "chatgpt": "https://chat.openai.com"
-        };
-        if (urls[target]) window.open(urls[target], "_blank");
+        ui.status.textContent = "External browser actions disabled in offline-essential mode";
         return;
     }
 
