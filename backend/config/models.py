@@ -46,6 +46,10 @@ class LLMConfig(BaseModel):
     openai: Optional[OpenAIConfig] = None
     ollama: Optional[OllamaConfig] = None
 
+
+class CoreConfig(BaseModel):
+    enable_refine: bool = False
+
 class ClusterConfig(BaseModel):
     enabled: bool = False
     endpoint: str = "http://hivecluster.local:8080"
@@ -63,3 +67,4 @@ class Settings(BaseModel):
     llm: LLMConfig
     cluster: ClusterConfig
     templates: TemplatesConfig
+    core: CoreConfig = Field(default_factory=CoreConfig)
