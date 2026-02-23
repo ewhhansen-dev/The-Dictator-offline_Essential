@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 
 from fastapi.testclient import TestClient
 
@@ -10,6 +11,7 @@ class FakeSpine:
     def __init__(self):
         self.append_calls = []
         self.transcribe_calls = []
+        self.refine_calls = []
 
     def transcribe_file(self, audio_path: Path) -> str:
         self.transcribe_calls.append(audio_path)
@@ -18,6 +20,10 @@ class FakeSpine:
     def append_session_text(self, text: str) -> Path:
         self.append_calls.append(text)
         return Path("transcripts/2026-01-31.md")
+
+    async def refine_text(self, text: str, template: str, provider: Optional[str] = None) -> str:
+        self.refine_calls.append({"text": text, "template": template, "provider": provider})
+        return f"Refined: {text}"
 
 
 class FakeSettings:
@@ -32,7 +38,7 @@ class FakeSettings:
 
 
 
-def test_health_reports_offline_essential_mode():
+def test_health_reports_hybrid_mode():
     app.dependency_overrides[routes.get_settings] = lambda: FakeSettings()
     client = TestClient(app)
 
@@ -42,8 +48,8 @@ def test_health_reports_offline_essential_mode():
     body = response.json()
     assert body["status"] == "ok"
     assert body["transcription_model"] == "small"
-    assert body["mode"] == "offline-essential"
-    assert body["external_api_enabled"] is False
+    assert body["mode"] == "hybrid"
+    assert body["external_api_enabled"] is True
 
     app.dependency_overrides.clear()
 
@@ -80,5 +86,24 @@ def test_append_session_uses_core_spine():
         "file": "transcripts/2026-01-31.md",
     }
     assert fake_spine.append_calls == ["hello spine"]
+
+    app.dependency_overrides.clear()
+
+
+def test_refine_uses_core_spine():
+    fake_spine = FakeSpine()
+    app.dependency_overrides[routes.get_spine] = lambda: fake_spine
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/refine",
+        json={"text": "raw text", "template": "fix_grammar"}
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"text": "Refined: raw text"}
+    assert len(fake_spine.refine_calls) == 1
+    assert fake_spine.refine_calls[0]["text"] == "raw text"
+    assert fake_spine.refine_calls[0]["template"] == "fix_grammar"
 
     app.dependency_overrides.clear()
