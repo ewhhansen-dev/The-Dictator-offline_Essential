@@ -1,4 +1,5 @@
 import logging
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.api.routes import router
@@ -23,8 +24,11 @@ app.add_middleware(
     allow_origins=[
         "http://localhost",
         "http://localhost:8000",
+        "http://localhost:8765",
         "http://127.0.0.1",
         "http://127.0.0.1:8000",
+        "http://127.0.0.1:8765",
+        "null",  # Allow file:// protocol for opening frontend/index.html directly
     ],
     allow_credentials=False,
     allow_methods=["*"],
@@ -39,11 +43,12 @@ async def root():
 
 def cli():
     import uvicorn
+    dev_mode = os.getenv("DEV_MODE", "false").lower() == "true"
     uvicorn.run(
         "backend.main:app",
         host=settings.server.host,
         port=settings.server.port,
-        reload=True
+        reload=dev_mode
     )
 
 if __name__ == "__main__":
