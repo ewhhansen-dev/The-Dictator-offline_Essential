@@ -4,10 +4,14 @@ class MIDIHandler {
         this.access = null;
         // Default mappings (should match button_map.toml)
         this.mappings = {
-            36: "toggle_recording",
-            37: "transcribe_copy",
-            38: "copy",
-            39: "append_session"
+            36: "toggle_recording",   // Pad 1
+            37: "transcribe_copy",    // Pad 2
+            38: "copy",               // Pad 3
+            39: "append_session",     // Pad 4
+            40: "refine:fix_grammar", // Pad 5
+            41: "refine:summarize",   // Pad 6
+            42: "refine:deep_research", // Pad 7
+            43: "refine:expand"       // Pad 8
         };
     }
 

@@ -2,6 +2,7 @@ import logging
 import shutil
 import tempfile
 from pathlib import Path
+from typing import Optional
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from pydantic import BaseModel
@@ -18,6 +19,12 @@ _spine = None
 
 class AppendRequest(BaseModel):
     text: str
+
+
+class RefineRequest(BaseModel):
+    text: str
+    template: str
+    provider: Optional[str] = None
 
 
 class TranscribeResponse(BaseModel):
@@ -40,10 +47,10 @@ def health_check(settings: Settings = Depends(get_settings)):
     return {
         "status": "ok",
         "version": "0.1.0",
-        "mode": "offline-essential",
+        "mode": "hybrid",
         "transcription_model": settings.transcription.model,
         "session_directory": str(settings.session.directory),
-        "external_api_enabled": False,
+        "external_api_enabled": True,
     }
 
 
@@ -86,4 +93,21 @@ def append_session(
         return {"status": "success", "file": str(path)}
     except Exception as exc:
         logger.error("Failed to append to session: %s", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@router.post("/refine")
+async def refine_text(
+    request: RefineRequest,
+    spine: CoreSpine = Depends(get_spine),
+):
+    try:
+        refined_text = await spine.refine_text(
+            text=request.text,
+            template=request.template,
+            provider=request.provider
+        )
+        return {"text": refined_text}
+    except Exception as exc:
+        logger.error("Refinement failed: %s", exc)
         raise HTTPException(status_code=500, detail=str(exc))
