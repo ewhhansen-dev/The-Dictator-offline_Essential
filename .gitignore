@@ -1,0 +1,195 @@
+# ====================
+# The-Dictator .gitignore
+# ====================
+
+# ----------------------
+# Python
+# ----------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ----------------------
+# Virtual Environments
+# ----------------------
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.python-version
+Pipfile.lock
+
+# ----------------------
+# IDE / Editors
+# ----------------------
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
+.spyderproject
+.spyproject
+.ropeproject
+
+# ----------------------
+# Testing
+# ----------------------
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# ----------------------
+# Type Checking / Linting
+# ----------------------
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+.pytype/
+
+# ----------------------
+# Whisper Models (large binary files)
+# ----------------------
+models/
+*.bin
+*.pt
+*.onnx
+!models/.gitkeep
+
+# ----------------------
+# Audio Files
+# ----------------------
+*.wav
+*.mp3
+*.flac
+*.ogg
+*.m4a
+*.aac
+*.wma
+*.webm
+recordings/
+temp_audio/
+
+# ----------------------
+# Transcripts / Session Logs
+# ----------------------
+transcripts/
+!transcripts/.gitkeep
+*.session.md
+
+# ----------------------
+# Configuration (user secrets)
+# ----------------------
+config/*.toml
+!config/*.example.toml
+
+# Environment files with secrets
+.env.local
+.env.*.local
+secrets.env
+*.secret.toml
+
+# ----------------------
+# OS Generated
+# ----------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ----------------------
+# Temporary Files
+# ----------------------
+*.tmp
+*.temp
+*.bak
+*.backup
+tmp/
+temp/
+.cache/
+
+# ----------------------
+# Node.js (if frontend uses npm)
+# ----------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# ----------------------
+# Build Artifacts
+# ----------------------
+*.app
+*.exe
+*.msi
+*.dmg
+*.deb
+*.rpm
+
+# ----------------------
+# Documentation Build
+# ----------------------
+docs/_build/
+site/
+
+# ----------------------
+# Logs
+# ----------------------
+logs/
+*.log
+
+# ----------------------
+# Debug
+# ----------------------
+debug_*.wav
+test_recording_*.wav
+*.prof
+profile_output/
+
+# ----------------------
+# Database (if used)
+# ----------------------
+*.db
+*.sqlite
+*.sqlite3

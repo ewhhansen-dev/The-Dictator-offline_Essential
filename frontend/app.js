@@ -3,7 +3,7 @@ const STORAGE_KEY = "dictator.offline.transcript";
 
 const state = {
     isRecording: false,
-    isOffline: true,
+    isOffline: false,
     transcript: "",
     autosaveTimer: null
 };
@@ -128,7 +128,37 @@ async function appendSession() {
 }
 
 async function refineText(templateName) {
-    ui.status.textContent = `Refine (${templateName}) unavailable in offline-essential mode`;
+    const text = ui.transcript.value;
+    if (!text) return;
+
+    if (state.isOffline) {
+        ui.status.textContent = "Refine unavailable in offline mode";
+        return;
+    }
+
+    try {
+        ui.status.textContent = `Refining with ${templateName}...`;
+        const res = await fetch(`${API_URL}/refine`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                text: text,
+                template: templateName
+            })
+        });
+
+        if (!res.ok) throw new Error(await res.text());
+
+        const data = await res.json();
+        state.transcript = data.text;
+        ui.transcript.value = state.transcript;
+        updateStats(state.transcript);
+        ui.status.textContent = "Refined";
+        scheduleAutosave();
+    } catch (err) {
+        console.error(err);
+        ui.status.textContent = "Error refining text";
+    }
 }
 
 function copyToClipboard() {
@@ -191,10 +221,20 @@ function downloadTranscript() {
 
 function updateOfflineMode() {
     state.isOffline = ui.offlineToggle.checked;
-    ui.btnAppend.disabled = false;
-    ui.selectTemplate.disabled = true;
-    ui.btnRefine.disabled = true;
-    ui.apiStatus.textContent = state.isOffline ? "API: Local-only" : ui.apiStatus.textContent;
+
+    if (state.isOffline) {
+        ui.btnAppend.disabled = false;
+        ui.selectTemplate.disabled = true;
+        ui.btnRefine.disabled = true;
+        ui.apiStatus.textContent = "API: Local-only";
+    } else {
+        ui.btnAppend.disabled = false;
+        ui.selectTemplate.disabled = false;
+        if (!state.isRecording) {
+            ui.btnRefine.disabled = false;
+        }
+        ui.apiStatus.textContent = "API: OK"; // Will be updated by checkAPI
+    }
 }
 
 // --- UI Updates ---
@@ -210,7 +250,9 @@ function updateUI() {
         ui.btnRecord.classList.remove('recording');
         ui.btnRecord.textContent = "Record (Pad 1)";
         ui.btnStop.disabled = true;
-        ui.btnRefine.disabled = true;
+        if (!state.isOffline) {
+            ui.btnRefine.disabled = false;
+        }
     }
 }
 
@@ -248,7 +290,7 @@ function handleAction(action) {
     }
 
     if (action.startsWith("open_browser:")) {
-        ui.status.textContent = "External browser actions disabled in offline-essential mode";
+        ui.status.textContent = "External browser actions disabled";
         return;
     }
 
