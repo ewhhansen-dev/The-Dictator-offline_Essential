@@ -1,0 +1,94 @@
+# The-Dictator Button Mapping
+# Copy to config/button_map.toml and customize
+#
+# Actions:
+#   toggle_recording    - Start/stop audio recording
+#   transcribe          - Transcribe current recording (no copy)
+#   copy                - Copy transcript to clipboard
+#   transcribe_copy     - Transcribe and copy in one action
+#   append_session      - Append transcript to today's session file
+#   refine:<template>   - Refine transcript with LLM template
+#   send_to:<provider>  - Send transcript to LLM and open response
+#   open_browser:<url>  - Open URL (useful for LLM chat interfaces)
+#   noop                - Do nothing (placeholder)
+#   quit                - Exit application
+
+# =============================================================================
+# MIDI Mappings
+# =============================================================================
+# Note numbers for a 16-pad drum controller (typical layout)
+# Most controllers send notes 36-51 for pads 1-16
+# Your controller may differ - check with a MIDI monitor
+#
+# With 3 banks/layers, you get 48 total buttons
+
+[midi]
+# --- Bank 1: Core Functions ---
+36 = "toggle_recording"     # Pad 1  - Record/Stop
+37 = "transcribe_copy"      # Pad 2  - Transcribe → Clipboard
+38 = "copy"                 # Pad 3  - Copy (if editing first)
+39 = "append_session"       # Pad 4  - Save to session
+
+# --- Bank 1: LLM Refinement ---
+40 = "refine:fix_grammar"   # Pad 5  - Clean up text
+41 = "refine:summarize"     # Pad 6  - Summarize
+42 = "refine:deep_research" # Pad 7  - Convert to research prompt
+43 = "refine:expand"        # Pad 8  - Expand notes
+
+# --- Bank 1: Send to LLM ---
+44 = "send_to:anthropic"    # Pad 9  - Send to Claude
+45 = "send_to:openai"       # Pad 10 - Send to ChatGPT
+46 = "send_to:ollama"       # Pad 11 - Send to local Ollama
+47 = "send_to:cluster"      # Pad 12 - Send to HiveCluster
+
+# --- Bank 1: Quick Access ---
+48 = "open_browser:claude"  # Pad 13 - Open Claude web
+49 = "open_browser:chatgpt" # Pad 14 - Open ChatGPT web
+50 = "noop"                 # Pad 15 - Reserved
+51 = "quit"                 # Pad 16 - Exit app
+
+# --- Bank 2: Additional Templates (if your controller supports banks) ---
+# Map notes 52-67 for bank 2
+# 52 = "refine:formal"
+# 53 = "refine:casual"
+# etc.
+
+# --- Bank 3: Custom Actions ---
+# Map notes 68-83 for bank 3
+# Define your own templates in prompts/ directory
+
+# =============================================================================
+# Keyboard Shortcuts
+# =============================================================================
+# Format: "modifier+modifier+key" = "action"
+# Modifiers: ctrl, alt, shift, meta (cmd on Mac)
+# These work when the browser tab has focus
+
+[keyboard]
+"ctrl+shift+r" = "toggle_recording"
+"ctrl+shift+t" = "transcribe_copy"
+"ctrl+shift+c" = "copy"
+"ctrl+shift+a" = "append_session"
+
+# Number keys for templates
+"ctrl+shift+1" = "refine:fix_grammar"
+"ctrl+shift+2" = "refine:summarize"
+"ctrl+shift+3" = "refine:deep_research"
+"ctrl+shift+4" = "refine:expand"
+
+# Function keys for LLM targets
+"ctrl+shift+f1" = "send_to:anthropic"
+"ctrl+shift+f2" = "send_to:openai"
+"ctrl+shift+f3" = "send_to:ollama"
+"ctrl+shift+f4" = "send_to:cluster"
+
+"ctrl+shift+q" = "quit"
+
+# =============================================================================
+# Browser URLs for open_browser action
+# =============================================================================
+[urls]
+claude = "https://claude.ai/new"
+chatgpt = "https://chat.openai.com"
+perplexity = "https://perplexity.ai"
+gemini = "https://gemini.google.com"

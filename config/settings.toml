@@ -1,0 +1,123 @@
+# The-Dictator Configuration
+# Copy this file to config/settings.toml and customize
+
+# =============================================================================
+# Server Settings
+# =============================================================================
+[server]
+host = "127.0.0.1"      # Only listen on localhost
+port = 8765             # Backend API port
+
+# =============================================================================
+# Audio Settings
+# =============================================================================
+[audio]
+sample_rate = 16000     # Whisper expects 16kHz
+channels = 1            # Mono audio
+normalize = true        # Run ffmpeg normalization before transcription
+
+# =============================================================================
+# Transcription Settings
+# =============================================================================
+[transcription]
+# Model size: tiny, base, small, medium, large-v3
+# Larger = more accurate, slower, more memory
+# Recommended for Chromebook CPU: small or base
+model = "small"
+
+# Device: cpu or cuda (cuda requires NVIDIA GPU + CUDA toolkit)
+device = "cpu"
+
+# Compute type: int8, float16, float32
+# int8 is fastest on CPU, float16 for GPU
+compute_type = "int8"
+
+# Language: ISO code (en, es, fr, etc.) or "auto" for detection
+# Setting explicit language is faster than auto-detection
+language = "en"
+
+# =============================================================================
+# Voice Activity Detection (VAD)
+# =============================================================================
+[vad]
+# Enable VAD for automatic recording stop
+enabled = true
+
+# Silero VAD threshold (0.0 - 1.0)
+# Higher = more aggressive filtering of non-speech
+threshold = 0.5
+
+# Minimum speech duration (seconds) to trigger detection
+min_speech_duration = 0.25
+
+# Silence duration (seconds) before auto-stop
+min_silence_duration = 1.0
+
+# =============================================================================
+# Session Logging
+# =============================================================================
+[session]
+# Directory for session markdown files
+directory = "./transcripts"
+
+# Date format for filenames (Python strftime)
+date_format = "%Y-%m-%d"
+
+# Include timestamp in entries
+include_timestamps = true
+
+# =============================================================================
+# LLM Providers (Optional)
+# API keys should be set via environment variables, not in this file!
+# =============================================================================
+[llm]
+# Default provider when not specified in request
+default_provider = "anthropic"
+
+# Anthropic (Claude)
+# Set ANTHROPIC_API_KEY environment variable
+[llm.anthropic]
+model = "claude-sonnet-4-20250514"
+max_tokens = 1024
+
+# OpenAI
+# Set OPENAI_API_KEY environment variable
+[llm.openai]
+model = "gpt-4o"
+max_tokens = 1024
+
+# Ollama (local)
+[llm.ollama]
+base_url = "http://localhost:11434"
+model = "llama3.2"
+
+# =============================================================================
+# HiveCluster Integration (Optional)
+# For heavy LLM workloads on remote GPU cluster
+# =============================================================================
+[cluster]
+# Enable cluster relay
+enabled = false
+
+# Cluster API endpoint (via Tailscale mesh)
+endpoint = "http://hivecluster.local:8080"
+
+# Set CLUSTER_API_KEY environment variable for auth
+# model = "qwen2.5-72b"
+
+# =============================================================================
+# Prompt Templates
+# =============================================================================
+[templates]
+# Directory containing Jinja2 prompt templates
+directory = "./prompts"
+
+# Default template for refinement
+default = "fix_grammar"
+
+# =============================================================================
+# Core Spine Mode
+# =============================================================================
+[core]
+# offline-essential: external providers are disabled by default.
+enable_refine = false
