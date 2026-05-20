@@ -15,6 +15,21 @@ logger = logging.getLogger(__name__)
 # Singleton instance
 _spine = None
 
+# Allowed audio formats
+ALLOWED_EXTENSIONS = {".wav", ".mp3", ".m4a", ".webm", ".ogg", ".flac"}
+ALLOWED_MIME_TYPES = {
+    "audio/wav",
+    "audio/x-wav",
+    "audio/mpeg",
+    "audio/mp3",
+    "audio/mp4",
+    "audio/x-m4a",
+    "audio/webm",
+    "audio/ogg",
+    "audio/flac",
+    "audio/x-flac",
+}
+
 
 class AppendRequest(BaseModel):
     text: str
@@ -57,9 +72,42 @@ def transcribe_audio(
     file: UploadFile = File(...),
     spine: CoreSpine = Depends(get_spine),
 ) -> TranscribeResponse:
-    logger.info("Received audio upload: %s", file.filename)
+    logger.info("Received audio upload: %s, content_type: %s", file.filename, file.content_type)
 
-    suffix = Path(file.filename or "").suffix or ".wav"
+    # 1. Validate extension
+    filename = file.filename or ""
+    suffix = Path(filename).suffix.lower()
+    if suffix not in ALLOWED_EXTENSIONS:
+        logger.warning("Rejected upload with invalid extension: %s", suffix)
+        raise HTTPException(status_code=400, detail=f"Invalid file extension: {suffix}")
+
+    # 2. Validate MIME type
+    if file.content_type not in ALLOWED_MIME_TYPES:
+        logger.warning("Rejected upload with invalid MIME type: %s", file.content_type)
+        raise HTTPException(status_code=400, detail=f"Invalid MIME type: {file.content_type}")
+
+    # 3. Basic Magic Byte Verification
+    # Read the first 256 bytes to check for common audio headers
+    header = file.file.read(256)
+    file.file.seek(0)  # Reset file pointer for shutil.copyfileobj
+
+    is_valid_header = False
+    if header.startswith(b"RIFF") and b"WAVE" in header[:12]:
+        is_valid_header = True  # WAV
+    elif header.startswith((b"\xff\xfb", b"\xff\xf3", b"\xff\xf2", b"ID3")):
+        is_valid_header = True  # MP3
+    elif header.startswith(b"OggS"):
+        is_valid_header = True  # Ogg
+    elif header.startswith(b"fLaC"):
+        is_valid_header = True  # FLAC
+    elif b"ftyp" in header[4:12]:
+        is_valid_header = True  # MP4/M4A
+    elif header.startswith(b"\x1a\x45\xdf\xa3"):
+        is_valid_header = True  # WebM/Matroska
+
+    if not is_valid_header:
+        logger.warning("Rejected upload with invalid magic bytes: %s", filename)
+        raise HTTPException(status_code=400, detail="Invalid audio file content")
 
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
         shutil.copyfileobj(file.file, tmp)
